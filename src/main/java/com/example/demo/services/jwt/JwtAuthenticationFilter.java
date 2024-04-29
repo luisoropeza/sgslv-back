@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 
 @Component
 @AllArgsConstructor
-@SuppressWarnings("null")
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
