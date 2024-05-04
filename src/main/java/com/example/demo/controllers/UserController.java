@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +39,13 @@ public class UserController {
     public ResponseEntity<UserResponse> createUser(@RequestBody @Valid CreateUserDto dto) {
         UserResponse user = userService.createUser(dto);
         return ResponseEntity.created(URI.create("/user/" + user.getId())).body(user);
+    }
+
+    @PostMapping("/users/import")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<List<UserResponse>> importUsers(
+            @RequestBody Map<String, List<CreateUserDto>> list) {
+        return ResponseEntity.ok(userService.importUsers(list.get("users")));
     }
 
     @PutMapping("/user")

@@ -12,5 +12,5 @@ public class UpdateUserDto {
     @NotBlank(message = "Role is mandatory")
     @Pattern(regexp = "^(ADMIN|EMPLOYEE|PERSONAL)$", message = "Role should be one of ADMIN, EMPLOYEE, or PERSONAL")
     private String role;
-    private Long team;
+    private String team;
 }

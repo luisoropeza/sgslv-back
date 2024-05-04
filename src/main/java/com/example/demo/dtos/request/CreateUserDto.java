@@ -20,7 +20,7 @@ public class CreateUserDto {
     @NotBlank(message = "Role is mandatory")
     @Pattern(regexp = "^(ADMIN|EMPLOYEE|PERSONAL)$", message = "Role should be one of ADMIN, EMPLOYEE, or PERSONAL")
     private String role;
-    private Long team;
+    private String team;
     @NotBlank(message = "First name is mandatory")
     private String firstName;
     @NotBlank(message = "Last name is mandatory")

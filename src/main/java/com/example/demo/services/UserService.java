@@ -11,6 +11,8 @@ import com.example.demo.dtos.response.UserUpdateResponse;
 public interface UserService {
     UserResponse createUser(CreateUserDto dto);
 
+    List<UserResponse> importUsers(List<CreateUserDto> list);
+
     UserUpdateResponse updateUser(UpdateProfileDto dto, String token);
 
     UserResponse updateUserById(Long id, UpdateUserDto dto);

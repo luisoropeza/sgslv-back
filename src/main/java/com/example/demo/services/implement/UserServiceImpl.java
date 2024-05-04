@@ -1,6 +1,9 @@
 package com.example.demo.services.implement;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,12 +53,36 @@ public class UserServiceImpl implements UserService {
         }
         Team team = null;
         if (dto.getTeam() != null) {
-            team = teamRepository.findById(dto.getTeam())
+            team = teamRepository.findByName(dto.getTeam())
                     .orElseThrow(() -> new AppException("Team can't be found", HttpStatus.NOT_FOUND));
         }
         User user = mainMapper.toUser(dto, team, passwordEncoder);
         userRepository.save(user);
         return mainMapper.toUserResponse(user);
+    }
+
+    @Override
+    public List<UserResponse> importUsers(List<CreateUserDto> list) {
+        List<UserResponse> users = new ArrayList<>();
+        Set<String> usernameSet = new HashSet<>();
+        for (CreateUserDto dto : list) {
+            String username = dto.getUsername();
+            if (!usernameSet.contains(username)) {
+                if (dto.getRole().equals("EMPLOYEE") || dto.getRole().equals("PERSONAL")) {
+                    usernameSet.add(username);
+                    if (!userRepository.existsByUsername(username)) {
+                        users.add(this.createUser(dto));
+                    }
+                } else {
+                    throw new AppException(
+                            "Please ensure that user roles in the XLSX are either 'EMPLOYEE' or 'PERSONAL'",
+                            HttpStatus.BAD_REQUEST);
+                }
+            } else {
+                throw new AppException("The xlsx contains username duplicated", HttpStatus.BAD_REQUEST);
+            }
+        }
+        return users;
     }
 
     @Override
@@ -76,7 +103,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
         Team team = null;
         if (dto.getTeam() != null) {
-            team = teamRepository.findById(dto.getTeam())
+            team = teamRepository.findByName(dto.getTeam())
                     .orElseThrow(() -> new AppException("Team can't be found", HttpStatus.NOT_FOUND));
         }
         user = mainMapper.toUser(user, dto, team, passwordEncoder);
