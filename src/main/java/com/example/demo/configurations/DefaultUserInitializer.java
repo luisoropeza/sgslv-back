@@ -21,10 +21,10 @@ public class DefaultUserInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        if (!userRepository.existsByUsername("superuser")) {
+        if (!userRepository.existsByUsername("admin")) {
             User defaultUser = new User();
             UserDetail defaultUserDetail = new UserDetail();
-            defaultUser.setUsername("superuser");
+            defaultUser.setUsername("admin");
             defaultUser.setPassword(passwordEncoder.encode("password"));
             defaultUser.setRole(Role.ADMIN);
             defaultUserDetail.setFirstName("Luis");

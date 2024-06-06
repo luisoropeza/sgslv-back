@@ -30,7 +30,7 @@ public class Request {
     private LocalDate endDate;
     @Column(name = "reason")
     private String reason;
-    @Column(name = "description")
+    @Column(name = "description", length = 1000)
     private String description;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
