@@ -17,6 +17,7 @@ import com.example.demo.dtos.response.RequestResponse;
 import com.example.demo.exceptions.AppException;
 import com.example.demo.models.Document;
 import com.example.demo.models.Request;
+import com.example.demo.models.Role;
 import com.example.demo.models.Status;
 import com.example.demo.models.User;
 import com.example.demo.repositories.jpa.DocumentRepository;
@@ -25,6 +26,8 @@ import com.example.demo.repositories.jpa.UserRepository;
 import com.example.demo.services.RequestService;
 import com.example.demo.services.jwt.JwtUtils;
 import com.example.demo.services.mapper.MainMapper;
+import com.resend.*;
+import com.resend.services.emails.model.CreateEmailOptions;
 
 import lombok.AllArgsConstructor;
 
@@ -40,23 +43,57 @@ public class RequestServiceImpl implements RequestService {
     private final Cloudinary cloudinary;
     private final MainMapper mainMapper;
     private final JwtUtils jwtUtils;
+    private final Resend resend = new Resend("re_RPfYjMje_NBn88rUAn22H2gdmWN9X8p1i");
 
     @Override
     public RequestResponse createRequest(RequestDto dto, MultipartFile multipartFile, String token)
             throws IOException {
-        if (requestRepository.existsByStatus(Status.Pending)) {
-            throw new AppException("Exists a request pending", HttpStatus.BAD_REQUEST);
-        }
         if (dto.getEndDate().isBefore(dto.getInitDate())) {
             throw new AppException("The end date must be after the start date.", HttpStatus.BAD_REQUEST);
         }
         User user = userRepository.findByUsername(jwtUtils.getUsernameFromToken(token)).orElseThrow();
+        User admin = userRepository.findByTeam(user.getTeam()).stream()
+                .filter(u -> u.getRole().equals(Role.PERSONAL)).findFirst().orElseThrow();
         Map<String, Object> file = null;
         if (multipartFile != null) {
             file = uploadFile(multipartFile);
         }
         Request request = mainMapper.toRequest(dto, user, file);
         requestRepository.save(request);
+        if (admin.getUserDetail().getEmail() != null) {
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from("onboarding@resend.dev")
+                    .to(admin.getUserDetail().getEmail())
+                    .subject("New request")
+                    .html("<div style='font-family: Arial, sans-serif; color: #333;'>"
+                            + "<div style='background-color: #f8f8f8; padding: 20px; border-bottom: 2px solid #e7e7e7;'>"
+                            + "<h2 style='color: #0056b3;'>New Request Notification</h2>"
+                            + "</div>"
+                            + "<div style='padding: 20px;'>"
+                            + "<p style='font-size: 16px;'>Hello, you have a new request</p>"
+                            + "<p style='font-size: 16px;'>By the user: "
+                            + "<span style='font-weight: bold;'>"
+                            + user.getUserDetail().getFirstName() + " "
+                            + user.getUserDetail().getLastName()
+                            + "</span>"
+                            + "</p>"
+                            + "<p style='font-size: 16px;'>Of the type: "
+                            + "<span style='font-weight: bold; color: #0056b3;'>"
+                            + request.getReason()
+                            + "</span>"
+                            + "</p>"
+                            + "</div>"
+                            + "<div style='background-color: #f8f8f8; padding: 10px; border-top: 2px solid #e7e7e7; text-align: center;'>"
+                            + "<p style='font-size: 14px; color: #777;'>This is an automated message, please do not reply.</p>"
+                            + "</div>"
+                            + "</div>")
+                    .build();
+            try {
+                resend.emails().send(params);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         return mainMapper.toRequestResponse(request);
     }
 

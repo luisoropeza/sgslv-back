@@ -19,6 +19,6 @@ public class RequestDto {
     @NotNull(message = "End date is mandatory")
     @Future(message = "End date must be after the current date")
     private LocalDate endDate;
-    @Pattern(regexp = "^(|.{1,255})$", message = "Description can't be more than 255 characters")
+    @Pattern(regexp = "^(|.{1,1000})$", message = "Description can't be more than 1000 characters")
     private String description;
 }
