@@ -1,6 +1,7 @@
 package com.example.demo.services.implement;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -131,6 +132,8 @@ public class RequestServiceImpl implements RequestService {
         if (!user.getTeam().equals(admin.getTeam())) {
             throw new AppException("That admin can't approved that request", HttpStatus.FORBIDDEN);
         }
+        request.setApprovedBy(admin);
+        request.setApprovedAt(LocalDateTime.now());
         request.setStatus(Status.valueOf(status));
         requestRepository.save(request);
         return mainMapper.toRequestResponse(request);

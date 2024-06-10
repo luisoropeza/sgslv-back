@@ -14,6 +14,8 @@ public class RequestResponse {
     private LocalDate endDate;
     private String description;
     private LocalDateTime createdAt;
+    private LocalDateTime approvedAt;
     private DocumentResponse document;
+    private UserResponse approvedBy;
     private UserResponse user;
 }

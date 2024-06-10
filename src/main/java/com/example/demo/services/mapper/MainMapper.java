@@ -171,7 +171,11 @@ public class MainMapper {
         dto.setEndDate(request.getEndDate());
         dto.setDescription(request.getDescription());
         dto.setCreatedAt(request.getCreatedAt());
+        dto.setApprovedAt(request.getApprovedAt());
         dto.setDocument(toDocumentResponse(request.getDocument()));
+        if(request.getApprovedBy() != null) {
+            dto.setApprovedBy(toUserResponse(request.getApprovedBy()));
+        }
         dto.setUser(toUserResponse(request.getUser()));
         return dto;
     }
